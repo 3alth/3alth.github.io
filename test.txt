@@ -1,0 +1,74 @@
+def split3(a_list):
+    n = len(a_list)
+    third = n // 3
+    remainder = n % 3
+    return a_list[:third + (remainder > 0)], a_list[third + (remainder > 0):2 * third + (remainder > 1)], a_list[2 * third + (remainder > 1):]
+
+def merge3(list1, list2, list3):
+    merged = []
+    i, j, k = 0, 0, 0
+    while i < len(list1) and j < len(list2) and k < len(list3):
+        if list1[i] <= list2[j] and list1[i] <= list3[k]:
+            merged.append(list1[i])
+            i += 1
+        elif list2[j] <= list1[i] and list2[j] <= list3[k]:
+            merged.append(list2[j])
+            j += 1
+        else:
+            merged.append(list3[k])
+            k += 1
+    merged.extend(list1[i:] or list2[j:] or list3[k:])
+    return merged
+
+def merge_sort3(a_list):
+    if len(a_list) <= 1:
+        return a_list
+    left, middle, right = split3(a_list)
+    sorted_left = merge_sort3(left)
+    sorted_middle = merge_sort3(middle)
+    sorted_right = merge_sort3(right)
+    return merge3(sorted_left, sorted_middle, sorted_right)
+
+def main():    
+    pass
+  
+if __name__ == "__main__":
+    main()
+""""""
+
+def build_table_list_comprehension(rows, cols):
+    return [[10 * r + c for c in range(cols)] for r in range(rows)]
+
+def slice(a_list, columns):
+    return [a_list[i:i + columns] for i in range(0, len(a_list), columns)]
+
+def main():    
+    pass
+  
+if __name__ == "__main__":
+    main()
+
+""""""
+
+def build_x_to_y(filename):
+    x_to_y = {}
+    with open(filename, "r") as file:
+        for line in file:
+            x, y = map(int, line.split())
+            x_to_y.setdefault(x, []).append(y)
+    return x_to_y
+
+def main():
+    '''
+    x_to_y = build_x_to_y("data/points_small.txt")
+    print("x_to_y =", x_to_y)
+    x_to_y = build_x_to_y("data/points.txt")
+    print(len(x_to_y))
+    print("x_to_y[30] =", x_to_y[30])
+    print("x_to_y[320] =", x_to_y[320])
+    print("x_to_y[445] =", x_to_y[445])
+    '''
+  
+if __name__ == "__main__":
+    main()
+
