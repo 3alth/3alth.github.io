@@ -1,74 +1,69 @@
-def split3(a_list):
-    n = len(a_list)
-    third = n // 3
-    remainder = n % 3
-    return a_list[:third + (remainder > 0)], a_list[third + (remainder > 0):2 * third + (remainder > 1)], a_list[2 * third + (remainder > 1):]
+class Time:
+    __slots__ = ['hours', 'minutes', 'seconds']
 
-def merge3(list1, list2, list3):
-    merged = []
-    i, j, k = 0, 0, 0
-    while i < len(list1) and j < len(list2) and k < len(list3):
-        if list1[i] <= list2[j] and list1[i] <= list3[k]:
-            merged.append(list1[i])
-            i += 1
-        elif list2[j] <= list1[i] and list2[j] <= list3[k]:
-            merged.append(list2[j])
-            j += 1
-        else:
-            merged.append(list3[k])
-            k += 1
-    merged.extend(list1[i:] or list2[j:] or list3[k:])
-    return merged
+    def __init__(self, hours=0, minutes=0, seconds=0):
+        self.hours = hours
+        self.minutes = minutes
+        self.seconds = seconds
 
-def merge_sort3(a_list):
-    if len(a_list) <= 1:
-        return a_list
-    left, middle, right = split3(a_list)
-    sorted_left = merge_sort3(left)
-    sorted_middle = merge_sort3(middle)
-    sorted_right = merge_sort3(right)
-    return merge3(sorted_left, sorted_middle, sorted_right)
+    def __add__(self, other):
+        total_seconds = (
+            self.seconds + other.seconds
+            + (self.minutes + other.minutes) * 60
+            + (self.hours + other.hours) * 3600
+        )
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        return Time(hours, minutes, seconds)
 
-def main():    
-    pass
-  
-if __name__ == "__main__":
-    main()
-""""""
+    def __str__(self):
+        return str(self.hours) + ":" + str(self.minutes).zfill(2) + ":" + str(self.seconds).zfill(2)
 
-def build_table_list_comprehension(rows, cols):
-    return [[10 * r + c for c in range(cols)] for r in range(rows)]
 
-def slice(a_list, columns):
-    return [a_list[i:i + columns] for i in range(0, len(a_list), columns)]
+class Song:
+    __slots__ = ['title', 'artist', 'duration']
 
-def main():    
-    pass
-  
-if __name__ == "__main__":
-    main()
+    def __init__(self, title, artist, duration):
+        self.title = title
+        self.artist = artist
+        self.duration = duration
 
-""""""
 
-def build_x_to_y(filename):
-    x_to_y = {}
-    with open(filename, "r") as file:
-        for line in file:
-            x, y = map(int, line.split())
-            x_to_y.setdefault(x, []).append(y)
-    return x_to_y
+class Album:
+    __slots__ = ['title', 'artist', 'tracks', 'total_duration']
+
+    def __init__(self, title, artist):
+        self.title = title
+        self.artist = artist
+        self.tracks = []
+        self.total_duration = Time()
+
+    def add_song(self, song):
+        self.tracks.append(song)
+        self.total_duration += song.duration
+
+    def __str__(self):
+        album_info = "Album: " + self.title + "\nArtist: " + self.artist + "\nTotal Duration: " + str(self.total_duration) + "\nTracks:"
+        track_info = ""
+        for i in range(len(self.tracks)):
+            track = self.tracks[i]
+            track_info += str(i + 1) + ". " + track.title + " - " + track.artist + " (" + str(track.duration) + ")\n"
+        return album_info + "\n" + track_info.strip()
+
 
 def main():
-    '''
-    x_to_y = build_x_to_y("data/points_small.txt")
-    print("x_to_y =", x_to_y)
-    x_to_y = build_x_to_y("data/points.txt")
-    print(len(x_to_y))
-    print("x_to_y[30] =", x_to_y[30])
-    print("x_to_y[320] =", x_to_y[320])
-    print("x_to_y[445] =", x_to_y[445])
-    '''
-  
+    song1 = Song("Track 1", "Artist 1", Time(0, 3, 45))
+    song2 = Song("Track 2", "Artist 1", Time(0, 4, 12))
+    song3 = Song("Track 3", "Artist 1", Time(0, 5, 20))
+
+    album = Album("Favorite Album", "Various Artists")
+    album.add_song(song1)
+    album.add_song(song2)
+    album.add_song(song3)
+
+    print(album)
+
+
 if __name__ == "__main__":
     main()
-
