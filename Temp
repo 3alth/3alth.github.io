@@ -1,0 +1,20 @@
+import random
+from arrayqueue import Queue
+
+def reverse_digits(n):
+    return int(str(n)[::-1])
+
+def hot_potato(names):
+    queue = Queue()
+    for name in names:
+        queue.enqueue(name)
+    while len(queue) > 1:
+        tosses = random.randint(1, 5)
+        for _ in range(tosses):
+            player = queue.dequeue()
+            print(player + " tosses the potato to " + queue.front())
+            queue.enqueue(player)
+        eliminated = queue.dequeue()
+        print("The music stops and " + eliminated + " is holding the potato!")
+    winner = queue.dequeue()
+    print("The game is over! " + winner + " wins the game!")
