@@ -9,7 +9,7 @@ class Item:
         self.__price = price
         self.__priority = priority
 
-    def get_id(self):
+    def get_ID(self):
         return self.__ID
 
     def get_price(self):
@@ -21,13 +21,15 @@ class Item:
     def set_priority(self, priority):
         self.__priority = priority
 
-    def __str__(self):
-        return "(" + self.__ID + ", $" + str(self.__price) + ", " + str(self.__priority) + ")"
+    def __repr__(self):  
+        return "({0}, ${1}, {2})".format(self.__ID, self.__price, self.__priority)
 
     def __eq__(self, other):
         return isinstance(other, Item) and self.__ID == other.__ID
 
     def __lt__(self, other):
+        if not isinstance(other, Item):
+            raise TypeError("Cannot compare Item with non-Item type")
         return self.__ID < other.__ID
 
     def __hash__(self):
@@ -44,25 +46,24 @@ class Shopper:
 
     def add(self, item, priority):
         item.set_priority(priority)
-        temp = node_stack.Stack()
+        temp = array_queue.Queue()
 
-        while not self.__cart.is_empty() and self.__cart.peek().get_priority() <= priority:
-            temp.push(self.__cart.pop())
-        
+        while not self.__cart.is_empty() and self.__cart.peek().get_priority() < item.get_priority():
+            temp.enqueue(self.__cart.pop())
+
         self.__cart.push(item)
+        self.__total_price += item.get_price()
 
         while not temp.is_empty():
-            self.__cart.push(temp.pop())
-
-        self.__total_price += item.get_price()
+            self.__cart.push(temp.dequeue())
 
     def remove(self):
         if self.__cart.is_empty():
             return None
 
-        item = self.__cart.pop()
-        self.__total_price -= item.get_price()
-        return item
+        lowest_priority_item = self.__cart.pop()
+        self.__total_price -= lowest_priority_item.get_price()
+        return lowest_priority_item
 
     def save_item(self, item, priority):
         item.set_priority(priority)
@@ -72,43 +73,60 @@ class Shopper:
         if self.__saved_items.is_empty():
             return None
 
-        item = self.__saved_items.dequeue()
-        self.add(item, item.get_priority())
-        return item
+        saved_item = self.__saved_items.dequeue()
+        self.add(saved_item, saved_item.get_priority())
+        return saved_item
 
     def checkout(self):
-        while self.__total_price > self.__budget:
-            item = self.remove()
-            if item:
-                self.save_item(item, item.get_priority())
+        while self.__total_price > self.__budget and not self.__cart.is_empty():
+            item_to_save = self.remove()
+            self.save_item(item_to_save, item_to_save.get_priority())
 
-        total_price = self.__total_price
         while not self.__cart.is_empty():
-            print(self.remove())
+            item_to_remove = self.remove()
+            print(item_to_remove)
 
-        return total_price
+        return self.__total_price
 
     def size_saved_items(self):
-        return self.__saved_items.size()
+        temp = array_queue.Queue()
+        count = 0
+        while not self.__saved_items.is_empty():
+            temp.enqueue(self.__saved_items.dequeue())
+            count += 1
+
+        while not temp.is_empty():
+            self.__saved_items.enqueue(temp.dequeue())
+
+        return count
 
     def size_cart(self):
-        return self.__cart.size()
+        temp = node_stack.Stack()
+        count = 0
+        while not self.__cart.is_empty():
+            temp.push(self.__cart.pop())
+            count += 1
+
+        while not temp.is_empty():
+            self.__cart.push(temp.pop())
+
+        return count
 
 # main() will not be graded. Feel free to modify the following for manual testing.
 def main():
-    shopper = Shopper(30)  # Budget is $30
+    shopper = Shopper(30) # budget is $30
 
     item1 = Item("item-1", 10)
     item2 = Item("item-2", 20)
     item3 = Item("item-3", 30)
+    
+    shopper.add(item1, 2) # item1's priority = 2
+    shopper.add(item2, 1) 
+    shopper.add(item3, 3) 
 
-    shopper.add(item1, 2)  # item1's priority = 2
-    shopper.add(item2, 1)
-    shopper.add(item3, 3)
-
-    print(shopper.remove())  # (item-2, $20, 1)
-    print(shopper.remove())  # (item-1, $10, 2)
-    print(shopper.remove())  # (item-3, $30, 3)
-
+    print(shopper.remove()) # (item-2, $20, 1)
+    print(shopper.remove()) # (item-1, $10, 2)
+    print(shopper.remove()) # (item-3, $30, 3)
+   
 if __name__ == '__main__':
     main()
