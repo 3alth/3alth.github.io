@@ -1,20 +1,114 @@
-import random
-from arrayqueue import Queue
+import node_stack
+import array_queue
 
-def reverse_digits(n):
-    return int(str(n)[::-1])
+class Item:
+    __slots__ = ['__ID', '__price', '__priority']
 
-def hot_potato(names):
-    queue = Queue()
-    for name in names:
-        queue.enqueue(name)
-    while len(queue) > 1:
-        tosses = random.randint(1, 5)
-        for _ in range(tosses):
-            player = queue.dequeue()
-            print(player + " tosses the potato to " + queue.front())
-            queue.enqueue(player)
-        eliminated = queue.dequeue()
-        print("The music stops and " + eliminated + " is holding the potato!")
-    winner = queue.dequeue()
-    print("The game is over! " + winner + " wins the game!")
+    def __init__(self, ID, price, priority=0):
+        self.__ID = ID
+        self.__price = price
+        self.__priority = priority
+
+    def get_id(self):
+        return self.__ID
+
+    def get_price(self):
+        return self.__price
+
+    def get_priority(self):
+        return self.__priority
+
+    def set_priority(self, priority):
+        self.__priority = priority
+
+    def __str__(self):
+        return "(" + self.__ID + ", $" + str(self.__price) + ", " + str(self.__priority) + ")"
+
+    def __eq__(self, other):
+        return isinstance(other, Item) and self.__ID == other.__ID
+
+    def __lt__(self, other):
+        return self.__ID < other.__ID
+
+    def __hash__(self):
+        return hash(self.__ID)
+
+class Shopper:
+    __slots__ = ['__cart', '__saved_items', '__budget', '__total_price']
+
+    def __init__(self, budget):
+        self.__cart = node_stack.Stack()
+        self.__saved_items = array_queue.Queue()
+        self.__budget = budget
+        self.__total_price = 0
+
+    def add(self, item, priority):
+        item.set_priority(priority)
+        temp = node_stack.Stack()
+
+        while not self.__cart.is_empty() and self.__cart.peek().get_priority() <= priority:
+            temp.push(self.__cart.pop())
+        
+        self.__cart.push(item)
+
+        while not temp.is_empty():
+            self.__cart.push(temp.pop())
+
+        self.__total_price += item.get_price()
+
+    def remove(self):
+        if self.__cart.is_empty():
+            return None
+
+        item = self.__cart.pop()
+        self.__total_price -= item.get_price()
+        return item
+
+    def save_item(self, item, priority):
+        item.set_priority(priority)
+        self.__saved_items.enqueue(item)
+
+    def move_to_cart(self):
+        if self.__saved_items.is_empty():
+            return None
+
+        item = self.__saved_items.dequeue()
+        self.add(item, item.get_priority())
+        return item
+
+    def checkout(self):
+        while self.__total_price > self.__budget:
+            item = self.remove()
+            if item:
+                self.save_item(item, item.get_priority())
+
+        total_price = self.__total_price
+        while not self.__cart.is_empty():
+            print(self.remove())
+
+        return total_price
+
+    def size_saved_items(self):
+        return self.__saved_items.size()
+
+    def size_cart(self):
+        return self.__cart.size()
+
+# main() will not be graded. Feel free to modify the following for manual testing.
+def main():
+    shopper = Shopper(30)  # Budget is $30
+
+    item1 = Item("item-1", 10)
+    item2 = Item("item-2", 20)
+    item3 = Item("item-3", 30)
+
+    shopper.add(item1, 2)  # item1's priority = 2
+    shopper.add(item2, 1)
+    shopper.add(item3, 3)
+
+    print(shopper.remove())  # (item-2, $20, 1)
+    print(shopper.remove())  # (item-1, $10, 2)
+    print(shopper.remove())  # (item-3, $30, 3)
+
+if __name__ == '__main__':
+    main()
